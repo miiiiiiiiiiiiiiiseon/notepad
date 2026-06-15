@@ -1,10 +1,23 @@
 const { createClient } = require('@libsql/client');
 
 // Turso (libSQL) 클라이언트. .env 또는 Render 환경변수에서 읽음.
-const client = createClient({
-  url: process.env.TURSO_URL,
-  authToken: process.env.TURSO_TOKEN,
-});
+let url = (process.env.TURSO_URL || '').trim();
+let authToken = (process.env.TURSO_TOKEN || '').trim();
+
+// URL 은 libsql:// (또는 http/ws) 로 시작. 두 값이 뒤바뀌어 입력된 경우 자동 보정.
+const looksLikeUrl = (s) => /^(libsql|wss?|https?):\/\//i.test(s);
+if (!looksLikeUrl(url) && looksLikeUrl(authToken)) {
+  console.warn('[db] TURSO_URL/TURSO_TOKEN 값이 뒤바뀐 것으로 보여 자동 교정합니다.');
+  [url, authToken] = [authToken, url];
+}
+if (!looksLikeUrl(url)) {
+  throw new Error(
+    `TURSO_URL 이 올바른 libsql:// URL 이 아닙니다. 현재 값 시작: "${url.slice(0, 12)}...". ` +
+    'Render 대시보드 Environment 에서 TURSO_URL 에 libsql://... 주소를, TURSO_TOKEN 에 토큰을 넣으세요.'
+  );
+}
+
+const client = createClient({ url, authToken });
 
 // 앱 시작 시 테이블이 없으면 생성 (SQLite 문법)
 async function init() {
