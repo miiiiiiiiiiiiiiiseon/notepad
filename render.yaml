@@ -1,11 +1,5 @@
-# Render Blueprint - 전부 무료(Free) 플랜으로 구성
+# Render Blueprint - 웹 서비스(무료). DB 는 외부 Turso(libSQL) 사용.
 # https://render.com/docs/blueprint-spec
-databases:
-  - name: notepad-db
-    plan: free                # 무료 PostgreSQL (생성 후 30일 뒤 만료됨에 유의)
-    databaseName: notepad
-    user: notepad
-
 services:
   - type: web
     name: notepad
@@ -15,10 +9,12 @@ services:
     startCommand: npm start
     healthCheckPath: /healthz
     envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: notepad-db
-          property: connectionString
+      # Turso 자격증명은 비밀값이므로 코드에 커밋하지 않고
+      # Render 대시보드(서비스 → Environment)에서 직접 값을 입력합니다.
+      - key: TURSO_URL
+        sync: false
+      - key: TURSO_TOKEN
+        sync: false
       - key: SESSION_SECRET
         generateValue: true   # Render 가 랜덤 시크릿 자동 생성
       - key: NODE_VERSION

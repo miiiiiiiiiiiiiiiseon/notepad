@@ -1,7 +1,7 @@
 {
   "name": "notepad",
   "version": "1.0.0",
-  "description": "에버노트 스타일 나만의 메모장",
+  "description": "에버노트 스타일 나만의 메모장 (Turso/libSQL)",
   "main": "src/server.js",
   "type": "commonjs",
   "scripts": {
@@ -12,12 +12,11 @@
     "node": ">=18"
   },
   "dependencies": {
+    "@libsql/client": "^0.14.0",
     "bcryptjs": "^2.4.3",
-    "connect-pg-simple": "^9.0.1",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "express": "^4.19.2",
-    "express-session": "^1.18.0",
-    "pg": "^8.12.0"
+    "express-session": "^1.18.0"
   }
 }

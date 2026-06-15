@@ -3,9 +3,9 @@ require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
-const pgSession = require('connect-pg-simple')(session);
 
-const { pool, init } = require('./db');
+const { client, init } = require('./db');
+const { LibsqlStore } = require('./session-store');
 const { requireAuth } = require('./middleware/auth');
 const authRoutes = require('./routes/auth');
 const apiRoutes = require('./routes/api');
@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 3000;
 
 // 기동 시 환경변수 로드 상태 출력 (값은 마스킹). 누락 시 경고.
 (function checkEnv() {
-  const required = ['DATABASE_URL', 'SESSION_SECRET'];
+  const required = ['TURSO_URL', 'TURSO_TOKEN', 'SESSION_SECRET'];
   const mask = (v) => (v ? v.slice(0, 4) + '••••(len:' + v.length + ')' : '(없음)');
   console.log('[env] 환경변수 로드 상태:');
   for (const key of required) {
@@ -47,7 +47,7 @@ app.set('trust proxy', 1);
 
 app.use(
   session({
-    store: new pgSession({ pool, tableName: 'session', createTableIfMissing: true }),
+    store: new LibsqlStore(client),
     secret: process.env.SESSION_SECRET || 'dev-secret-change-me',
     resave: false,
     saveUninitialized: false,

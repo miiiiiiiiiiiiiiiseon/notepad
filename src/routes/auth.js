@@ -1,6 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const { pool } = require('../db');
+const { client } = require('../db');
 
 const router = express.Router();
 
@@ -22,18 +22,22 @@ router.post('/register', async (req, res) => {
   }
   try {
     const hash = await bcrypt.hash(password, 10);
-    const result = await pool.query(
-      'INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id',
-      [email, hash]
-    );
+    const result = await client.execute({
+      sql: 'INSERT INTO users (email, password_hash) VALUES (?, ?) RETURNING id',
+      args: [email, hash],
+    });
     const userId = result.rows[0].id;
     // 첫 노트북 기본 생성
-    await pool.query('INSERT INTO notebooks (user_id, name) VALUES ($1, $2)', [userId, '내 노트북']);
+    await client.execute({
+      sql: 'INSERT INTO notebooks (user_id, name) VALUES (?, ?)',
+      args: [userId, '내 노트북'],
+    });
     req.session.userId = userId;
     req.session.email = email;
     res.redirect('/app');
   } catch (err) {
-    if (err.code === '23505') {
+    // SQLite UNIQUE 위반
+    if (/UNIQUE constraint/i.test(err.message || '')) {
       return res.render('register', { error: '이미 가입된 이메일입니다.' });
     }
     console.error(err);
@@ -52,8 +56,11 @@ router.post('/login', async (req, res) => {
   const email = (req.body.email || '').trim().toLowerCase();
   const password = req.body.password || '';
   try {
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-    const user = result.rows[0];
+    const { rows } = await client.execute({
+      sql: 'SELECT * FROM users WHERE email = ?',
+      args: [email],
+    });
+    const user = rows[0];
     if (!user || !(await bcrypt.compare(password, user.password_hash))) {
       return res.render('login', { error: '이메일 또는 비밀번호가 올바르지 않습니다.' });
     }
