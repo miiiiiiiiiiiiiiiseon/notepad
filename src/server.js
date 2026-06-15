@@ -13,6 +13,26 @@ const apiRoutes = require('./routes/api');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// 기동 시 환경변수 로드 상태 출력 (값은 마스킹). 누락 시 경고.
+(function checkEnv() {
+  const required = ['DATABASE_URL', 'SESSION_SECRET'];
+  const mask = (v) => (v ? v.slice(0, 4) + '••••(len:' + v.length + ')' : '(없음)');
+  console.log('[env] 환경변수 로드 상태:');
+  for (const key of required) {
+    console.log(`[env]   ${key} = ${mask(process.env[key])}`);
+  }
+  console.log(`[env]   PORT = ${process.env.PORT || '(미설정, 기본 3000)'}`);
+  console.log(`[env]   NODE_ENV = ${process.env.NODE_ENV || '(미설정)'}`);
+  const missing = required.filter((k) => !process.env[k]);
+  if (missing.length) {
+    console.warn(
+      `[env] ⚠️ 누락된 필수 환경변수: ${missing.join(', ')}\n` +
+      `[env]    Render 에서는 .env 파일이 무시됩니다. render.yaml 의 envVars 또는 \n` +
+      `[env]    Render 대시보드(서비스 → Environment)에서 설정하세요.`
+    );
+  }
+})();
+
 // 뷰 엔진
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
