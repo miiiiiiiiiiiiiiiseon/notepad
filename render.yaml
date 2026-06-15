@@ -1,0 +1,25 @@
+# Render Blueprint - 전부 무료(Free) 플랜으로 구성
+# https://render.com/docs/blueprint-spec
+databases:
+  - name: notepad-db
+    plan: free                # 무료 PostgreSQL (생성 후 30일 뒤 만료됨에 유의)
+    databaseName: notepad
+    user: notepad
+
+services:
+  - type: web
+    name: notepad
+    runtime: node
+    plan: free                # 무료 웹 서비스 (15분 비활성 시 슬립)
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: notepad-db
+          property: connectionString
+      - key: SESSION_SECRET
+        generateValue: true   # Render 가 랜덤 시크릿 자동 생성
+      - key: NODE_VERSION
+        value: "20"

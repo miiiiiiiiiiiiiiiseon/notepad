@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>로그인 · 메모장</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body class="auth-page">
+  <form class="auth-card" method="POST" action="/login">
+    <h1>📒 나의 메모장</h1>
+    <p class="auth-sub">로그인하고 노트를 시작하세요</p>
+    <% if (error) { %><div class="auth-error"><%= error %></div><% } %>
+    <input type="email" name="email" placeholder="이메일" required autofocus />
+    <input type="password" name="password" placeholder="비밀번호" required />
+    <button type="submit">로그인</button>
+    <p class="auth-switch">계정이 없으신가요? <a href="/register">회원가입</a></p>
+  </form>
+</body>
+</html>
